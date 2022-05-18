@@ -8,9 +8,6 @@ $("#homeButton").click(function () {
     $("#customer").css("display", "none");
     $("#item").css("display", "none");
     $("#placeOrder").css("display", "none");
-
-   /* $("#homePageCustomers").text(customerDB.length);
-    $("#homePageAmount").text(itemDB.length);*/
 });
 
 $("#customerButton").click(function () {
@@ -35,10 +32,4 @@ $("#placeOrderButton").click(function () {
     loadItemId();
     loadCustomerId();
 });
-/*console.log("HomePageEnd 1");
-$("#homePageCustomers").text(customerDB.length);
-console.log("HomePageEnd 2 ");
 
-$("#homePageAmount").text(itemDB.length);
-console.log("HomePageEnd");
-$("#homePageOrderAmount").text(orderDB.length);*/

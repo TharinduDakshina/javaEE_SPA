@@ -1,6 +1,9 @@
 console.log("pakaya");
 $("#saveCustomer").prop("disabled", true);
 
+{
+    loadAllCustomers();
+}
 $("#saveCustomer").click(function () {
     saveCustomer();
     clearAll();
@@ -45,23 +48,29 @@ function checkAlreadyExits() {
 
 function loadAllCustomers() {
     $("#customerTableBody").empty();
-    for (var i of customerDB) {
-        /*create a html row*/
-        let row = `<tr><td>${i.getCustomerId()}</td><td>${i.getCustomerName()}</td><td>${i.getCustomerAddress()}</td><td>${i.getCustomerTp()}</td></tr>`;
-        /*select the table body and append the row */
-        $("#customerTableBody").append(row);
-    }
+
+    $.ajax({
+        url: "http://localhost:8080/SPA_BackEnd/customer?option=GETALL",
+        method: "GET",
+        success:function (res){
+            for (const customer of res.data) {
+                let row = `<tr><td>${customer.id}</td><td>${customer.name}</td><td>${customer.address}</td><td>${customer.salary}</td></tr>`;
+                $("#customerTableBody").append(row);
+            }
+        }
+    });
+
     $("#customerTableBody>tr").click(function () {
         let cstId = $(this).children(":eq(0)").text();
         let cstName = $(this).children(":eq(1)").text();
         let cstAddress = $(this).children(":eq(2)").text();
-        let cstTp = $(this).children(":eq(3)").text();
+        let cstSalary = $(this).children(":eq(3)").text();
 
 
         $("#cstId").val(cstId);
         $("#cstName").val(cstName);
         $("#cstAddress").val(cstAddress);
-        $("#cstTp").val(cstTp);
+        $("#cstSalary").val(cstSalary);
     });
 }
 
@@ -78,16 +87,25 @@ function clearAll() {
 $("#btnSearch").click(function () {
     var searchID = $("#txtCustomerSearch").val();
 
-    var response = searchCustomer(searchID);
-    if (response) {
-        $("#cstId").val(response.getCustomerId());
-        $("#cstName").val(response.getCustomerName());
-        $("#cstAddress").val(response.getCustomerAddress());
-        $("#cstSalary").val(response.getCustomerTp());
-    } else {
-        clearAll();
-        alert("No Such a Customer");
-    }
+    $.ajax({
+        url:"http://localhost:8080/SPA_BackEnd/customer?option=SEARCH&searchId="+searchID,
+        method:"GET",
+        success:function (res){
+            if (res.status==200){
+                $("#cstId").val(res.data.id);
+                $("#cstName").val(res.data.name);
+                $("#cstAddress").val(res.data.address);
+                $("#cstSalary").val(res.data.salary);
+            }else if (res.status==404){
+                alert(res.message);
+            }else {
+                alert(res.data);
+            }
+        },error:function (ob,textStatus,error){
+            console.log(error);
+        }
+
+    });
 
 });
 
