@@ -18,12 +18,10 @@ public class CORSFilters implements Filter {
         resp.addHeader("Access-Control-Allow-Origin","*");
         resp.addHeader("Access-Control-Allow-Methods", "DELETE, PUT");
         resp.addHeader("Access-Control-Allow-Headers", "Content-Type");
-
         filterChain.doFilter(servletRequest, servletResponse);
     }
 
     @Override
     public void destroy() {
-
     }
 }

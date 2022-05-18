@@ -18,30 +18,19 @@ function saveCustomer() {
 
     $.ajax({
         url:"http://localhost:8080/SPA_BackEnd/customer",
-        method:"post",
+        method:"POST",
         contentType:"application/json",
         data:JSON.stringify(cusObject),
         success:function (res){
-            console.log("customer added..")
+            if (res.status==200){
+                alert(res.message);
+            }else {
+                alert(res.data);
+            }
         },error:function (ob,textStatus,error){
-            console.log("customer not added..")
+            alert(textStatus);
         }
     });
-    /*//gather customer information
-    let customerID = $("#cstId").val();
-    let customerName = $("#cstName").val();
-    let customerAddress = $("#cstAddress").val();
-    let customerTp = $("#cstTp").val();
-
-    //create Object
-
-    var customer = new customerDTO();
-    customer.setCustomerID(customerID);
-    customer.setCustomerName(customerName);
-    customer.setCustomerAddress(customerAddress);
-    customer.setCustomerTp(customerTp);
-
-    customerDB.push(customer);*/
 
 }
 
