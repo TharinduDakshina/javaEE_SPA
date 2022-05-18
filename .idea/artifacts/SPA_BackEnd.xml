@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="SPA_BackEnd">
+    <output-path>$PROJECT_DIR$/out/artifacts/SPA_BackEnd</output-path>
+    <root id="archive" name="SPA_BackEnd.war">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="BackEnd" />
+        </element>
+        <element id="directory" name="lib" />
+      </element>
+      <element id="javaee-facet-resources" facet="BackEnd/web/Web" />
+    </root>
+  </artifact>
+</component>
