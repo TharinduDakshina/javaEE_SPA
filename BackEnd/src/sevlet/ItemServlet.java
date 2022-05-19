@@ -1,9 +1,7 @@
 package sevlet;
 
 import javax.annotation.Resource;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
+import javax.json.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -36,7 +34,7 @@ public class ItemServlet extends HttpServlet {
 
                 case "SEARCH":
 
-                    PreparedStatement pst = connection.prepareStatement("select * FROM item WHERE id=?");
+                    PreparedStatement pst = connection.prepareStatement("select * FROM item WHERE code=?");
                     pst.setString(1,searchId);
                     ResultSet resultSet = pst.executeQuery();
 
@@ -100,6 +98,54 @@ public class ItemServlet extends HttpServlet {
             response.add("message","Error");
             response.add("data",throwables.getLocalizedMessage());
             writer.print(response.build());
+            throwables.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        JsonReader itemReader = Json.createReader(req.getReader());
+        JsonObject jsonObject = itemReader.readObject();
+        String itemId = jsonObject.getString("itemId");
+        String description = jsonObject.getString("description");
+        int qty = Integer.parseInt(jsonObject.getString("qty"));
+        double unitePrice = Double.parseDouble(jsonObject.getString("unitePrice"));
+
+
+        PrintWriter writer = resp.getWriter();
+        resp.setContentType("application/json");
+
+        try {
+            Connection connection = ds.getConnection();
+            PreparedStatement pst = connection.prepareStatement("INSERT INTO item VALUES (?,?,?,?)");
+            pst.setString(1,itemId);
+            pst.setString(2,description);
+            pst.setInt(3,qty);
+            pst.setDouble(4,unitePrice);
+
+            if (pst.executeUpdate()>0) {
+                JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+                resp.setStatus(HttpServletResponse.SC_CREATED);
+                objectBuilder.add("status",200);
+                objectBuilder.add("message","Successfully Add....!");
+                objectBuilder.add("data","");
+                writer.print(objectBuilder.build());
+            }else {
+                JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+                resp.setStatus(HttpServletResponse.SC_OK);
+                objectBuilder.add("status",501);
+                objectBuilder.add("message","Error");
+                objectBuilder.add("data","");
+                writer.print(objectBuilder.build());
+            }
+            connection.close();
+        } catch (SQLException throwables) {
+            JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+            resp.setStatus(HttpServletResponse.SC_OK);
+            objectBuilder.add("status",400);
+            objectBuilder.add("message","Error Exception");
+            objectBuilder.add("data",throwables.getLocalizedMessage());
+            writer.print(objectBuilder.build());
             throwables.printStackTrace();
         }
     }

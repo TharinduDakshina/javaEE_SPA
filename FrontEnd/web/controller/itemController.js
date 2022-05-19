@@ -3,25 +3,35 @@ $("#saveItem").prop("disabled", true);
 $("#saveItem").click(function () {
     saveItem();
     clearItemAll();
-    loadAllItem();
+   // loadAllItem();
 });
 
 function saveItem() {
-    //gather Item information
-    let itemId = $("#itemId").val();
-    let itemName = $("#itemName").val();
-    let itemQTY = $("#itemQty").val();
-    let itemPrice = $("#itemPrice").val();
+    var ItemObject = {
+        itemId: $("#itemId").val(),
+        description: $("#itemName").val(),
+        qty: $("#itemQty").val(),
+        unitePrice: $("#itemPrice").val()
+    }
 
-    //create Object
-    var item= new itemDTO();
-    item.setItemId(itemId);
-    item.setItemName(itemName);
-    item.setItemQty(itemQTY);
-    item.setItemPrice(itemPrice);
+    $.ajax({
+        url: "http://localhost:8080/SPA_BackEnd/item",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(ItemObject),
+        success: function (res) {
+            if (res.status == 200) {
+                alert(res.message);
+            } else if (res.status == 501){
+                alert(res.message);
+            }else {
+                alert(res.data);
+            }
+        }, error: function (ob, textStatus, error) {
+            alert(textStatus);
+        }
+    });
 
-
-    itemDB.push(item);
 }
 
 function checkAlreadyExitsItem() {
@@ -84,7 +94,28 @@ function loadAllItem() {
 $("#btnItemSearch").click(function () {
     var searchID = $("#txtItemSearch").val();
 
-    var response = searchItem(searchID);
+    $.ajax({
+        url: "http://localhost:8080/SPA_BackEnd/item?option=SEARCH&searchId=" + searchID,
+        method: "GET",
+        success: function (res) {
+            if (res.status == 200) {
+                $("#itemId").val(res.data.itemId);
+                $("#itemName").val(res.data.description);
+                $("#itemQty").val(res.data.qty);
+                $("#itemPrice").val(res.data.unitePrice);
+            } else if (res.status == 404) {
+                alert(res.message);
+            } else {
+                alert(res.data);
+            }
+        }, error: function (ob, textStatus, error) {
+            console.log(error);
+        }
+
+    });
+
+
+    /* var response = searchItem(searchID);
     if (response) {
         $("#itemId").val(response.getItemId());
         $("#itemName").val(response.getItemName());
@@ -93,7 +124,7 @@ $("#btnItemSearch").click(function () {
     } else {
         clearItemAll();
         alert("No Such a Item");
-    }
+    }*/
 });
 
 function searchItem(id) {
