@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
+import javax.xml.ws.spi.http.HttpHandler;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -64,11 +65,6 @@ public class CustomerServlet extends HttpServlet {
                         searchResponse.add("data","");
                         writer.print(searchResponse.build());
                     }
-
-
-
-
-
 
                     break;
                 case "GETALL":
@@ -146,5 +142,85 @@ public class CustomerServlet extends HttpServlet {
             throwables.printStackTrace();
         }
 
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String cstId = req.getParameter("cstId");
+        resp.setContentType("application/json");
+        PrintWriter writer = resp.getWriter();
+
+        try {
+            Connection connection = ds.getConnection();
+            PreparedStatement pst = connection.prepareStatement("Delete from Customer where id=?");
+            pst.setObject(1, cstId);
+
+            if (pst.executeUpdate()>0) {
+                JsonObjectBuilder response = Json.createObjectBuilder();
+                response.add("status",200);
+                response.add("message","Customer Deleted..!x!");
+                response.add("data","");
+                writer.print(response.build());
+            }else {
+                JsonObjectBuilder response = Json.createObjectBuilder();
+                resp.setStatus(HttpServletResponse.SC_OK);
+                response.add("status",400);
+                response.add("message","Wrong Id Insert");
+                response.add("data","");
+                writer.print(response.build());
+            }
+        } catch (SQLException e) {
+            JsonObjectBuilder response = Json.createObjectBuilder();
+            resp.setStatus(HttpServletResponse.SC_OK);
+            response.add("status",500);
+            response.add("message","Error");
+            response.add("data",e.getLocalizedMessage());
+            writer.print(response.build());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        JsonReader reader = Json.createReader(req.getReader());
+        JsonObject jsonObject = reader.readObject();
+        String customerId = jsonObject.getString("id");
+        String customerName = jsonObject.getString("name");
+        String customerAddress = jsonObject.getString("address");
+        double customerSalary = Double.parseDouble(jsonObject.getString("salary"));
+
+        PrintWriter writer = resp.getWriter();
+        resp.setContentType("application/json");
+        try {
+            Connection connection = ds.getConnection();
+            PreparedStatement stm = connection.prepareStatement("UPDATE customer SET name=?,address=?,salary=? where id=?");
+            stm.setString(1,customerName);
+            stm.setString(2,customerAddress);
+            stm.setDouble(3,customerSalary);
+            stm.setString(4,customerId);
+            if (stm.executeUpdate()>0) {
+                JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+                objectBuilder.add("status", 200);
+                objectBuilder.add("message", "Successfully Updated");
+                objectBuilder.add("data", "");
+                writer.print(objectBuilder.build());
+            }else {
+                JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+                resp.setStatus(HttpServletResponse.SC_OK);
+                objectBuilder.add("status", 400);
+                objectBuilder.add("message", "Update Failed");
+                objectBuilder.add("data", "");
+                writer.print(objectBuilder.build());
+            }
+            connection.close();
+        } catch (SQLException e) {
+            JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+            resp.setStatus(HttpServletResponse.SC_OK);
+            objectBuilder.add("status", 500);
+            objectBuilder.add("message", "Exception Error");
+            objectBuilder.add("data", e.getLocalizedMessage());
+            writer.print(objectBuilder.build());
+            e.printStackTrace();
+        }
     }
 }

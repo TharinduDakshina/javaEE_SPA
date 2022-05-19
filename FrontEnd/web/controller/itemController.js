@@ -42,14 +42,7 @@ function clearItemAll() {
     $("#errorItemId,#errorItemName,#errorQty,#errorPrice").text("");
 }
 
-function loadAllItem() {
-    $("#itemTableBody").empty();
-    for (var i of itemDB) {
-        /*create a html row*/
-        let itemRow = `<tr><td>${i.getItemId()}</td><td>${i.getItemName()}</td><td>${i.getItemQty()}</td><td>${i.getItemPrice()}</td></tr>`;
-        /*select the table body and append the row */
-        $("#itemTableBody").append(itemRow);
-    }
+function bindClickEventItem() {
     $("#itemTableBody>tr").click(function () {
         let id = $(this).children(":eq(0)").text();
         let name = $(this).children(":eq(1)").text();
@@ -61,6 +54,31 @@ function loadAllItem() {
         $("#itemQty").val(QTY);
         $("#itemPrice").val(iPrice);
     });
+}
+
+function loadAllItem() {
+    $("#itemTableBody").empty();
+
+    $.ajax({
+        url: "http://localhost:8080/SPA_BackEnd/item?option=GETALL",
+        method: "GET",
+        success: function (res) {
+             console.log("111111111111111111111111111");
+            for (const item of res.data) {
+                let row = `<tr><td>${item.itemId}</td><td>${item.description}</td><td>${item.qty}</td><td>${item.unitePrice}</td></tr>`;
+                $("#itemTableBody").append(row);
+            }
+            console.log("---------------------------------------------------------------------");
+            bindClickEventItem();
+        }
+    });
+    /*for (var i of itemDB) {
+        /!*create a html row*!/
+        let itemRow = `<tr><td>${i.getItemId()}</td><td>${i.getItemName()}</td><td>${i.getItemQty()}</td><td>${i.getItemPrice()}</td></tr>`;
+        /!*select the table body and append the row *!/
+        $("#itemTableBody").append(itemRow);
+    }*/
+
 }
 
 $("#btnItemSearch").click(function () {

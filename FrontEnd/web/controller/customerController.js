@@ -1,76 +1,77 @@
 console.log("pakaya");
 $("#saveCustomer").prop("disabled", true);
 
-{
-    loadAllCustomers();
-}
+
 $("#saveCustomer").click(function () {
     saveCustomer();
     clearAll();
+    // $("#customerTableBody").empty();
+    console.log("Save customer");
     loadAllCustomers();
 });
 
 function saveCustomer() {
 
-    var cusObject={
-        id:$("#cstId").val(),
-        name:$("#cstName").val(),
-        address:$("#cstAddress").val(),
-        salary:$("#cstSalary").val()
+    var cusObject = {
+        id: $("#cstId").val(),
+        name: $("#cstName").val(),
+        address: $("#cstAddress").val(),
+        salary: $("#cstSalary").val()
     }
 
     $.ajax({
-        url:"http://localhost:8080/SPA_BackEnd/customer",
-        method:"POST",
-        contentType:"application/json",
-        data:JSON.stringify(cusObject),
-        success:function (res){
-            if (res.status==200){
+        url: "http://localhost:8080/SPA_BackEnd/customer",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(cusObject),
+        success: function (res) {
+            if (res.status == 200) {
                 alert(res.message);
-            }else {
+            } else {
                 alert(res.data);
             }
-        },error:function (ob,textStatus,error){
+        }, error: function (ob, textStatus, error) {
             alert(textStatus);
         }
     });
 
 }
 
-function checkAlreadyExits() {
-    for (let i = 0; i < customerDB.length; i++) {
-        if ($("#cstId").val() == customerDB[i].getCustomerId()) {
-            return -1;
-        }
-    }
-    return 0;
-}
+
+
 
 function loadAllCustomers() {
     $("#customerTableBody").empty();
+    //  console.log("empty-->" + empty)
 
     $.ajax({
         url: "http://localhost:8080/SPA_BackEnd/customer?option=GETALL",
         method: "GET",
-        success:function (res){
+        success: function (res) {
+            // console.log("111111111111111111111111111");
             for (const customer of res.data) {
                 let row = `<tr><td>${customer.id}</td><td>${customer.name}</td><td>${customer.address}</td><td>${customer.salary}</td></tr>`;
                 $("#customerTableBody").append(row);
             }
+            // console.log("---------------------------------------------------------------------");
+            bindClickEvent();
         }
     });
+}
 
+function bindClickEvent() {
     $("#customerTableBody>tr").click(function () {
-        let cstId = $(this).children(":eq(0)").text();
-        let cstName = $(this).children(":eq(1)").text();
-        let cstAddress = $(this).children(":eq(2)").text();
-        let cstSalary = $(this).children(":eq(3)").text();
+        //Get values from the selected row
+        let id = $(this).children().eq(0).text();
+        let name = $(this).children().eq(1).text();
+        let address = $(this).children().eq(2).text();
+        let salary = $(this).children().eq(3).text();
 
-
-        $("#cstId").val(cstId);
-        $("#cstName").val(cstName);
-        $("#cstAddress").val(cstAddress);
-        $("#cstSalary").val(cstSalary);
+        //Set values to the text-fields
+        $("#cstId").val(id);
+        $("#cstName").val(name);
+        $("#cstAddress").val(address);
+        $("#cstSalary").val(salary);
     });
 }
 
@@ -79,7 +80,7 @@ function clearAll() {
     $('#cstId,#cstName,#cstAddress,#cstSalary').css('border', '2px solid #ced4da');
     $('#cstId').focus();
     $("#saveCustomer").attr('disabled', true);
-    loadAllCustomers();
+    //loadAllCustomers();
     $("#errorId,#errorName,#errorAddress,#errorTp").text("");
 }
 
@@ -88,20 +89,20 @@ $("#btnSearch").click(function () {
     var searchID = $("#txtCustomerSearch").val();
 
     $.ajax({
-        url:"http://localhost:8080/SPA_BackEnd/customer?option=SEARCH&searchId="+searchID,
-        method:"GET",
-        success:function (res){
-            if (res.status==200){
+        url: "http://localhost:8080/SPA_BackEnd/customer?option=SEARCH&searchId=" + searchID,
+        method: "GET",
+        success: function (res) {
+            if (res.status == 200) {
                 $("#cstId").val(res.data.id);
                 $("#cstName").val(res.data.name);
                 $("#cstAddress").val(res.data.address);
                 $("#cstSalary").val(res.data.salary);
-            }else if (res.status==404){
+            } else if (res.status == 404) {
                 alert(res.message);
-            }else {
+            } else {
                 alert(res.data);
             }
-        },error:function (ob,textStatus,error){
+        }, error: function (ob, textStatus, error) {
             console.log(error);
         }
 
@@ -125,45 +126,84 @@ $("#deleteCustomer").click(function () {
 
 function deleteCustomer(id) {
     var index = -1;
-    for (var i = 0; i < customerDB.length; i++) {
+
+    $.ajax({
+        url: "http://localhost:8080/SPA_BackEnd/customer?cstId=" + id,
+        method: "delete",
+        success: function (res) {
+            if (res.status == 200) {
+                alert(res.message);
+                loadAllCustomers();
+            } else if (res.status == 400) {
+                alert(res.message);
+            } else {
+                alert(res.data);
+            }
+        }, error: function (ob, textMessage, error) {
+            console.log(ob);
+            console.log(textMessage);
+            console.log(error);
+        }
+    });
+    /*for (var i = 0; i < customerDB.length; i++) {
         if (customerDB[i].getCustomerId() == id) {
             index = i;
             alert(customerDB[i].getCustomerId() + " Deleted");
         }
     }
 
-    customerDB.splice(index, 1);
+    customerDB.splice(index, 1);*/
 }
 
 $("#btnUpdateCustomer").click(function () {
-    var updateId = $("#cstId").val();
-    var updateName = $("#cstName").val();
-    var updateAddress = $("#cstAddress").val();
-    var updateTp = $("#cstTp").val();
-    updateCustomer(updateId, updateName, updateAddress, updateTp);
+    var cusObject = {
+        id: $("#cstId").val(),
+        name: $("#cstName").val(),
+        address: $("#cstAddress").val(),
+        salary: $("#cstSalary").val()
+    }
+    updateCustomer(cusObject);
     clearAll();
 });
 
-function updateCustomer(id, name, address, tp) {
-    for (let i = 0; i < customerDB.length; i++) {
-        if (id == customerDB[i].getCustomerId()) {
-            customerDB[i].setCustomerName(name);
-            customerDB[i].setCustomerAddress(address);
-            customerDB[i].setCustomerTp(tp);
+function updateCustomer(cusObject) {
 
-            alert("Successfully Update ");
+    $.ajax({
+        url: "http://localhost:8080/SPA_BackEnd/customer",
+        method: "put",
+        contentType: "application/json",
+        data: JSON.stringify(cusObject),
+        success: function (res) {
+            if (res.status==200){
+                alert(res.message);
+                loadAllCustomers();
+            }else  if (res.status==400){
+                alert(res.message);
+            }else {
+                alert(res.data);
+                console.log(res.data);
+            }
         }
-    }
-}
+    });
 
+    /* for (let i = 0; i < customerDB.length; i++) {
+         if (id == customerDB[i].getCustomerId()) {
+             customerDB[i].setCustomerName(name);
+             customerDB[i].setCustomerAddress(address);
+             customerDB[i].setCustomerTp(tp);
+
+             alert("Successfully Update ");
+         }
+     }*/
+}
 
 /*---------------------Validation--------------------------*/
 
 let regxCstId = /^(C00-)[0-9]{3,4}$/;
+
 let regxCstName = /^[A-z ]{3,20}$/;
 let regxCstAddress = /^[A-z 0-9/,]{3,50}$/;
 let regxSalary = /^[0-9]{3,10}$/;
-
 $('#cstId,#cstName,#cstAddress,#cstTp').on('keydown', function (eventOb) {
     if (eventOb.key == "Tab") {
         eventOb.preventDefault();
@@ -174,9 +214,43 @@ $('#cstId,#cstName,#cstAddress,#cstTp').on('blur', function () {
     formValid();
 });
 
+function checkAlreadyExits(cusID) {
+
+var index=0;
+    $.ajax({
+        url: "http://localhost:8080/SPA_BackEnd/customer?option=SEARCH&searchId=" + cusID,
+        method: "GET",
+        success: function (res) {
+            //console.log("11111111111111111111111111");
+            if (res.status == 200) {
+                //console.log("22222222222222222222");
+                //index=-1;
+            } else if (res.status == 404) {
+                //console.log("3333333333333333333333333");
+                //index=0;
+            } else {
+                //console.log("44444444444444444444444444444");
+                //index=0;
+            }
+        }, error: function (ob, textStatus, error) {
+            //console.log("555555555555555555555555555");
+            //console.log(error);
+            index=0;
+        }
+    });
+return index;
+
+    /*for (let i = 0; i < customerDB.length; i++) {
+        if ($("#cstId").val() == customerDB[i].getCustomerId()) {
+            return -1;
+        }
+    }*/
+}
+
 function formValid() {
     var cusID = $("#cstId").val();
-    let result = checkAlreadyExits();
+    let result = checkAlreadyExits(cusID);
+    console.log(result);
     if (result == -1) {
         console.log(result)
         $("#cstId").css('border', '2px solid red');

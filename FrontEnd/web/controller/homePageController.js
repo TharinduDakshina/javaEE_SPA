@@ -15,6 +15,8 @@ $("#customerButton").click(function () {
     $("#customer").css("display", "block");
     $("#item").css("display", "none");
     $("#placeOrder").css("display", "none");
+    console.log("loadForm");
+    loadAllCustomers();
 });
 
 $("#itemButton").click(function () {
@@ -22,6 +24,7 @@ $("#itemButton").click(function () {
     $("#customer").css("display", "none");
     $("#item").css("display", "block");
     $("#placeOrder").css("display", "none");
+    loadAllItem();
 });
 
 $("#placeOrderButton").click(function () {
