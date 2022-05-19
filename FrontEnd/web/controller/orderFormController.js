@@ -50,18 +50,44 @@ $("#btnPurchase").click(function () {
 
 function loadItemId() {
     $("#orderFormItemId").empty();
-    itemDB.forEach(function (e) {
-        $("#orderFormItemId").append($("<option></option>").attr("value", e).text(e.getItemId()));
+
+    $.ajax({
+        url:"http://localhost:8080/SPA_BackEnd/item?option=GetCustomerID",
+        method:"GET",
+        success:function (res){
+            if (res.status == 200) {
+                for (const itemIds of res.data) {
+                    $("#orderFormItemId").append($("<option></option>").attr("value", itemIds).text(itemIds.id));
+                }
+            }
+        }
     });
+
+
+    /*itemDB.forEach(function (e) {
+        $("#orderFormItemId").append($("<option></option>").attr("value", e).text(e.getItemId()));
+    });*/
 }
 
 function loadCustomerId() {
 
     $("#orderFormCstId").empty();
     /*$("#orderFormCstId").append($("<option></option>").attr("value",e).text(--select Id--));*/
-    customerDB.forEach(function (e) {
-        $("#orderFormCstId").append($("<option></option>").attr("value", e).text(e.getCustomerId()));
+    $.ajax({
+        url:"http://localhost:8080/SPA_BackEnd/customer?option=GetCustomerID",
+        method:"GET",
+        success:function (res){
+            if (res.status == 200) {
+                for (const customerId of res.data) {
+                    $("#orderFormCstId").append($("<option></option>").attr("value", customerId).text(customerId.id));
+                }
+            }
+        }
     });
+
+    /*customerDB.forEach(function (e) {
+        $("#orderFormCstId").append($("<option></option>").attr("value", e).text(e.getCustomerId()));
+    });*/
 
 }
 
@@ -71,13 +97,26 @@ $("#orderFormCstId").click(function () {
 });
 
 function setCustomerData(id) {
-    for (var i = 0; i < customerDB.length; i++) {
-        if (customerDB[i].getCustomerId() == id) {
-            $("#orderFormCustomerName").val(customerDB[i].getCustomerName());
-            $("#orderFormCustomerAddress").val(customerDB[i].getCustomerAddress());
-            $("#orderFormCustomerTp").val(customerDB[i].getCustomerTp());
+
+    $.ajax({
+        url: "http://localhost:8080/SPA_BackEnd/customer?option=SEARCH&searchId=" + id,
+        method: "GET",
+        success: function (res) {
+            if (res.status == 200) {
+                $("#orderFormCustomerName").val(res.data.name);
+                $("#orderFormCustomerAddress").val(res.data.address);
+                $("#orderFormCustomerTp").val(res.data.salary);
+            } else if (res.status == 404) {
+                alert(res.message);
+            } else {
+                alert(res.data);
+            }
+        }, error: function (ob, textStatus, error) {
+            console.log(error);
         }
-    }
+
+    });
+
 }
 
 $("#orderFormItemId").click(function () {
@@ -86,13 +125,26 @@ $("#orderFormItemId").click(function () {
 });
 
 function setItemData(id) {
-    for (var j = 0; j < itemDB.length; j++) {
-        if (itemDB[j].getItemId() == id) {
-            $("#orderFormItemName").val(itemDB[j].getItemName());
-            $("#orderFormQty").val(itemDB[j].getItemQty());
-            $("#orderFormPrice").val(itemDB[j].getItemPrice());
+
+    $.ajax({
+        url: "http://localhost:8080/SPA_BackEnd/item?option=SEARCH&searchId=" + id,
+        method: "GET",
+        success: function (res) {
+            if (res.status == 200) {
+                $("#orderFormItemName").val(res.data.description);
+                $("#orderFormQty").val(res.data.qty);
+                $("#orderFormPrice").val(res.data.unitePrice);
+            } else if (res.status == 404) {
+                alert(res.message);
+            } else {
+                alert(res.data);
+            }
+        }, error: function (ob, textStatus, error) {
+            console.log(error);
         }
-    }
+
+    });
+
 }
 
 
@@ -240,7 +292,33 @@ function clearOrderItem() {
 }
 
 function updateItemDatabase() {
-    var itemId = $("#orderFormItemId option:selected").text();
+   /* var itemId = ;*/
+    var preItemQty=$("#orderFormQty").val();
+    var orderQry=$("#orderQty").val();
+    console.log(preItemQty);
+
+    var itemQtyUpdateObject={
+        itemId:$("#orderFormItemId option:selected").text(),
+        updateQty:preItemQty-orderQry,
+    }
+
+    $.ajax({
+        url: "http://localhost:8080/SPA_BackEnd/item?option=updateQTY",
+        method: "put",
+        contentType: "application/json",
+        data: JSON.stringify(itemQtyUpdateObject),
+        success: function (res) {
+            if (res.status==200){
+                console.log(res.message);
+            }else  if (res.status==400){
+                console.log(res.message);
+            }else {
+                console.log(res.data);
+                console.log(res.message);
+            }
+        }
+    });
+
     var qty = parseInt($("#orderQty").val());
     for (let i = 0; i < itemDB.length; i++) {
         if (itemId == itemDB[i].getItemId()) {

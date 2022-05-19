@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
-import javax.xml.ws.spi.http.HttpHandler;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -91,6 +90,23 @@ public class CustomerServlet extends HttpServlet {
                     response.add("data",arrayBuilder.build());
                     writer.print(response.build());
                     break;
+                case "GetCustomerID":
+                    ResultSet result = connection.prepareStatement("SELECT  id FROM customer").executeQuery();
+                    JsonArrayBuilder cstIdArray = Json.createArrayBuilder();
+                    while (result.next()){
+                        String cstId = result.getString(1);
+
+                        JsonObjectBuilder cstIdObject = Json.createObjectBuilder();
+                        cstIdObject.add("id",cstId);
+                        cstIdArray.add(cstIdObject.build());
+                    }
+
+                    JsonObjectBuilder responseGetCstId = Json.createObjectBuilder();
+                    responseGetCstId.add("status",200);
+                    responseGetCstId.add("message","Done");
+                    responseGetCstId.add("data",cstIdArray.build());
+                    writer.print(responseGetCstId.build());
+                break;
             }
             connection.close();
         } catch (SQLException e) {

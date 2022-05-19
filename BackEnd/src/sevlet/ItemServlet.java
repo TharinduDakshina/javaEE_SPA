@@ -89,6 +89,23 @@ public class ItemServlet extends HttpServlet {
                     response.add("data",arrayBuilder.build());
                     writer.print(response.build());
                     break;
+                case "GetCustomerID":
+                    ResultSet result = connection.prepareStatement("SELECT  code FROM item").executeQuery();
+                    JsonArrayBuilder cstIdArray = Json.createArrayBuilder();
+                    while (result.next()){
+                        String cstId = result.getString(1);
+
+                        JsonObjectBuilder cstIdObject = Json.createObjectBuilder();
+                        cstIdObject.add("id",cstId);
+                        cstIdArray.add(cstIdObject.build());
+                    }
+
+                    JsonObjectBuilder responseGetCstId = Json.createObjectBuilder();
+                    responseGetCstId.add("status",200);
+                    responseGetCstId.add("message","Done");
+                    responseGetCstId.add("data",cstIdArray.build());
+                    writer.print(responseGetCstId.build());
+                    break;
             }
             connection.close();
         } catch (SQLException throwables) {
@@ -189,36 +206,68 @@ public class ItemServlet extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        JsonReader itemReader = Json.createReader(req.getReader());
-        JsonObject jsonObject = itemReader.readObject();
-        String itemId = jsonObject.getString("itemId");
-        String description = jsonObject.getString("description");
-        int qty = Integer.parseInt(jsonObject.getString("qty"));
-        double unitePrice = Double.parseDouble(jsonObject.getString("unitePrice"));
-
         PrintWriter writer = resp.getWriter();
         resp.setContentType("application/json");
         try {
+            String option = req.getParameter("option");
             Connection connection = ds.getConnection();
-            PreparedStatement stm = connection.prepareStatement("UPDATE item SET description=?,qtyOnHand=?,unitPrice=? where code=?");
-            stm.setString(1,description);
-            stm.setInt(2,qty);
-            stm.setDouble(3,unitePrice);
-            stm.setString(4,itemId);
-            if (stm.executeUpdate()>0) {
-                JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-                objectBuilder.add("status", 200);
-                objectBuilder.add("message", "Successfully Updated");
-                objectBuilder.add("data", "");
-                writer.print(objectBuilder.build());
-            }else {
-                JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-                resp.setStatus(HttpServletResponse.SC_OK);
-                objectBuilder.add("status", 400);
-                objectBuilder.add("message", "Update Failed");
-                objectBuilder.add("data", "");
-                writer.print(objectBuilder.build());
+            switch (option){
+                case "updateItem":
+                    JsonReader itemReader = Json.createReader(req.getReader());
+                    JsonObject jsonObject = itemReader.readObject();
+                    String itemId = jsonObject.getString("itemId");
+                    String description = jsonObject.getString("description");
+                    int qty = Integer.parseInt(jsonObject.getString("qty"));
+                    double unitePrice = Double.parseDouble(jsonObject.getString("unitePrice"));
+
+
+                    PreparedStatement stm = connection.prepareStatement("UPDATE item SET description=?,qtyOnHand=?,unitPrice=? where code=?");
+                    stm.setString(1,description);
+                    stm.setInt(2,qty);
+                    stm.setDouble(3,unitePrice);
+                    stm.setString(4,itemId);
+                    if (stm.executeUpdate()>0) {
+                        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+                        objectBuilder.add("status", 200);
+                        objectBuilder.add("message", "Successfully Updated");
+                        objectBuilder.add("data", "");
+                        writer.print(objectBuilder.build());
+                    }else {
+                        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+                        resp.setStatus(HttpServletResponse.SC_OK);
+                        objectBuilder.add("status", 400);
+                        objectBuilder.add("message", "Update Failed");
+                        objectBuilder.add("data", "");
+                        writer.print(objectBuilder.build());
+                    }
+                 break;
+
+                case "updateQTY":
+                    JsonReader itemQtyReader = Json.createReader(req.getReader());
+                    JsonObject jsonItemObject = itemQtyReader.readObject();
+                    String updateItemId = jsonItemObject.getString("itemId");
+                    int updateQty = jsonItemObject.getInt("updateQty");
+
+                    PreparedStatement pst = connection.prepareStatement("update item set qtyOnHand=? where code=?");
+                    pst.setInt(1,updateQty);
+                    pst.setString(2,updateItemId);
+                    if (pst.executeUpdate()>0) {
+                        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+                        objectBuilder.add("status", 200);
+                        objectBuilder.add("message", "Successfully Updated Qty");
+                        objectBuilder.add("data", "");
+                        writer.print(objectBuilder.build());
+                    }else {
+                        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+                        resp.setStatus(HttpServletResponse.SC_OK);
+                        objectBuilder.add("status", 400);
+                        objectBuilder.add("message", "Qty Update Failed");
+                        objectBuilder.add("data", "");
+                        writer.print(objectBuilder.build());
+                    }
+                    break;
             }
+
             connection.close();
         } catch (SQLException e) {
             JsonObjectBuilder objectBuilder = Json.createObjectBuilder();

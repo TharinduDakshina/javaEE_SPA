@@ -187,7 +187,7 @@ $("#btnUpdate").click(function (){
 function updateItem(itemObject){
 
     $.ajax({
-        url: "http://localhost:8080/SPA_BackEnd/item",
+        url: "http://localhost:8080/SPA_BackEnd/item?option=updateItem",
         method: "put",
         contentType: "application/json",
         data: JSON.stringify(itemObject),

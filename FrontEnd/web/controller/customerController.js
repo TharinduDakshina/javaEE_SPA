@@ -1,4 +1,3 @@
-console.log("pakaya");
 $("#saveCustomer").prop("disabled", true);
 
 
@@ -36,8 +35,6 @@ function saveCustomer() {
     });
 
 }
-
-
 
 
 function loadAllCustomers() {
@@ -174,12 +171,12 @@ function updateCustomer(cusObject) {
         contentType: "application/json",
         data: JSON.stringify(cusObject),
         success: function (res) {
-            if (res.status==200){
+            if (res.status == 200) {
                 alert(res.message);
                 loadAllCustomers();
-            }else  if (res.status==400){
+            } else if (res.status == 400) {
                 alert(res.message);
-            }else {
+            } else {
                 alert(res.data);
                 console.log(res.data);
             }
@@ -216,7 +213,7 @@ $('#cstId,#cstName,#cstAddress,#cstTp').on('blur', function () {
 
 function checkAlreadyExits(cusID) {
 
-var index=0;
+    var index = 0;
     $.ajax({
         url: "http://localhost:8080/SPA_BackEnd/customer?option=SEARCH&searchId=" + cusID,
         method: "GET",
@@ -235,10 +232,10 @@ var index=0;
         }, error: function (ob, textStatus, error) {
             //console.log("555555555555555555555555555");
             //console.log(error);
-            index=0;
+            index = 0;
         }
     });
-return index;
+    return index;
 
     /*for (let i = 0; i < customerDB.length; i++) {
         if ($("#cstId").val() == customerDB[i].getCustomerId()) {
