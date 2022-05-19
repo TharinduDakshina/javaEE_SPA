@@ -149,4 +149,85 @@ public class ItemServlet extends HttpServlet {
             throwables.printStackTrace();
         }
     }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String itemId = req.getParameter("itemId");
+        resp.setContentType("application/json");
+        PrintWriter writer = resp.getWriter();
+
+        try {
+            Connection connection = ds.getConnection();
+            PreparedStatement pst = connection.prepareStatement("Delete from item where code=?");
+            pst.setString(1, itemId);
+
+            if (pst.executeUpdate()>0) {
+                JsonObjectBuilder response = Json.createObjectBuilder();
+                response.add("status",200);
+                response.add("message","Item Deleted..!x!");
+                response.add("data","");
+                writer.print(response.build());
+            }else {
+                JsonObjectBuilder response = Json.createObjectBuilder();
+                resp.setStatus(HttpServletResponse.SC_OK);
+                response.add("status",400);
+                response.add("message","Wrong Id Insert");
+                response.add("data","");
+                writer.print(response.build());
+            }
+            connection.close();
+        } catch (SQLException throwables) {
+            JsonObjectBuilder response = Json.createObjectBuilder();
+            resp.setStatus(HttpServletResponse.SC_OK);
+            response.add("status",500);
+            response.add("message","Error");
+            response.add("data",throwables.getLocalizedMessage());
+            writer.print(response.build());
+            throwables.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        JsonReader itemReader = Json.createReader(req.getReader());
+        JsonObject jsonObject = itemReader.readObject();
+        String itemId = jsonObject.getString("itemId");
+        String description = jsonObject.getString("description");
+        int qty = Integer.parseInt(jsonObject.getString("qty"));
+        double unitePrice = Double.parseDouble(jsonObject.getString("unitePrice"));
+
+        PrintWriter writer = resp.getWriter();
+        resp.setContentType("application/json");
+        try {
+            Connection connection = ds.getConnection();
+            PreparedStatement stm = connection.prepareStatement("UPDATE item SET description=?,qtyOnHand=?,unitPrice=? where code=?");
+            stm.setString(1,description);
+            stm.setInt(2,qty);
+            stm.setDouble(3,unitePrice);
+            stm.setString(4,itemId);
+            if (stm.executeUpdate()>0) {
+                JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+                objectBuilder.add("status", 200);
+                objectBuilder.add("message", "Successfully Updated");
+                objectBuilder.add("data", "");
+                writer.print(objectBuilder.build());
+            }else {
+                JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+                resp.setStatus(HttpServletResponse.SC_OK);
+                objectBuilder.add("status", 400);
+                objectBuilder.add("message", "Update Failed");
+                objectBuilder.add("data", "");
+                writer.print(objectBuilder.build());
+            }
+            connection.close();
+        } catch (SQLException e) {
+            JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+            resp.setStatus(HttpServletResponse.SC_OK);
+            objectBuilder.add("status", 500);
+            objectBuilder.add("message", "Exception Error");
+            objectBuilder.add("data", e.getLocalizedMessage());
+            writer.print(objectBuilder.build());
+            e.printStackTrace();
+        }
+    }
 }

@@ -143,27 +143,68 @@ $("#deleteItem").click(function () {
 
 function deleteItem(id) {
     var index = -1;
-    for (var i = 0; i < itemDB.length; i++) {
+
+    $.ajax({
+        url: "http://localhost:8080/SPA_BackEnd/item?itemId=" + id,
+        method: "delete",
+        success: function (res) {
+            if (res.status == 200) {
+                alert(res.message);
+                loadAllItem();
+            } else if (res.status == 400) {
+                alert(res.message);
+            } else {
+                alert(res.data);
+            }
+        }, error: function (ob, textMessage, error) {
+            console.log(ob);
+            console.log(textMessage);
+            console.log(error);
+        }
+    });
+    /*for (var i = 0; i < itemDB.length; i++) {
         if (itemDB[i].getItemId() == id) {
             index = i;
             alert(itemDB[i].getItemId() + " Deleted");
         }
     }
 
-    itemDB.splice(index, 1);
+    itemDB.splice(index, 1);*/
 }
 
 $("#btnUpdate").click(function (){
-    var updateItemId=$("#itemId").val();
-    var updateItemName=$("#itemName").val();
-    var updateItemQty=$("#itemQty").val();
-    var updateItemPrice=$("#itemPrice").val();
-    updateItem(updateItemId,updateItemName,updateItemQty,updateItemPrice);
+    var itemObject = {
+        itemId: $("#itemId").val(),
+        description: $("#itemName").val(),
+        qty: $("#itemQty").val(),
+        unitePrice: $("#itemPrice").val()
+    }
+
+    updateItem(itemObject);
     clearItemAll();
 });
 
-function updateItem(id,name,qty,price){
-    for (let j=0;j<itemDB.length;j++){
+function updateItem(itemObject){
+
+    $.ajax({
+        url: "http://localhost:8080/SPA_BackEnd/item",
+        method: "put",
+        contentType: "application/json",
+        data: JSON.stringify(itemObject),
+        success: function (res) {
+            if (res.status==200){
+                alert(res.message);
+                loadAllItem();
+            }else  if (res.status==400){
+                alert(res.message);
+            }else {
+                alert(res.data);
+                console.log(res.data);
+            }
+        }
+    });
+
+    /*for (let j=0;j<itemDB.length;j++){
         if (id==itemDB[j].getItemId()){
             itemDB[j].setItemName(name);
             itemDB[j].setItemQty(qty);
@@ -171,7 +212,7 @@ function updateItem(id,name,qty,price){
 
             alert("Successfully Updated.");
         }
-    }
+    }*/
 }
 
 /*------------------------Validation------------------------------*/

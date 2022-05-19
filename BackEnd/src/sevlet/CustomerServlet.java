@@ -169,6 +169,7 @@ public class CustomerServlet extends HttpServlet {
                 response.add("data","");
                 writer.print(response.build());
             }
+            connection.close();
         } catch (SQLException e) {
             JsonObjectBuilder response = Json.createObjectBuilder();
             resp.setStatus(HttpServletResponse.SC_OK);
