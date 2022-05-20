@@ -164,9 +164,10 @@ $("#btnAddItem").click(function () {
                 $(this).closest('tr').remove();
                 let orderId = $("#orderId").val();
                 let id = $(this).closest('tr').children(":eq(0)").text();
+                let itemPrice = parseInt($(this).closest('tr').children(":eq(2)").text());
                 let qty = parseInt($(this).closest('tr').children(":eq(3)").text());
                 let total =parseInt($(this).closest('tr').children(":eq(4)").text());
-                removeItem(orderId, id, qty,total);
+                removeItem(orderId, id, qty,total,itemPrice);
             }
         });
     }
@@ -195,7 +196,7 @@ $("#btnAddItem").click(function () {
     });
 }*/
 
-function removeItem(orderId, id, qty,total) {
+function removeItem(orderId, id, qty,total,itemPrice) {
     /*update itemDB*/
 
     getPreItemQTY(id);
@@ -289,27 +290,33 @@ function removeItem(orderId, id, qty,total) {
 
     /*updateTotal*/
 
-    let currentTotal =parseInt($('#total').text());
+    let currentTotal =parseInt($('#total').text().split(".")[0]);
     console.log(currentTotal);
     let newTotal=currentTotal-total;
     console.log(newTotal);
     $('#total').text(newTotal+'.00/=');
-    countTotal();
+    countTotal(total);
 
 }
 
-function countTotal() {
+function countTotal(tableTotal) {
+
     var total;
-    var displayTotal = parseInt($("#total").text());
-    console.log(displayTotal);
-    if (displayTotal == 0) {
-        total = (parseInt($("#orderQty").val())) * (parseInt($("#orderFormPrice").val()));
-        console.log(total);
-        $("#total").text(total + ".00 /=");
-    } else {
-        var sum = displayTotal + (parseInt($("#orderQty").val())) * (parseInt($("#orderFormPrice").val()));
-        $("#total").text(sum + ".00 /=");
+    if (tableTotal==undefined){
+        var displayTotal = parseInt($("#total").text());
+        console.log(displayTotal);
+        if (displayTotal == 0) {
+            var itemQty=parseInt($("#orderQty").val()); //qty
+            var itemPrice=parseInt($("#orderFormPrice").val()); //price
+            total = itemQty * itemPrice;
+            console.log(total);
+            $("#total").text(total + ".00 /=");
+        } else {
+            var sum = displayTotal + (parseInt($("#orderQty").val())) * (parseInt($("#orderFormPrice").val()));
+            $("#total").text(sum + ".00 /=");
+        }
     }
+
 
     displayTotal = parseInt($("#total").text());
 
