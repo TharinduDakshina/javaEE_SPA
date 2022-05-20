@@ -154,7 +154,7 @@ $("#btnAddItem").click(function () {
         alert("Please select the Customer Id and Item Id");
         clearOrderItem();
     } else {
-        updateItemDatabase();
+        updateItemDatabase();//-----------------------------------------
         saveOrder();
         loadTable();
 
@@ -168,21 +168,117 @@ $("#btnAddItem").click(function () {
                 let total =parseInt($(this).closest('tr').children(":eq(4)").text());
                 removeItem(orderId, id, qty,total);
             }
+        });
+    }
+});
+
+/*function getPreItemQTY(id) {
+    $.ajax({
+        url:"http://localhost:8080/SPA_BackEnd/item?option=SEARCH&searchId="+id,
+        method:"GET",
+        success:function (res){
+            if (res.status==200){
+                var w=parseInt(res.data.qty)
+                console.log("AAAAAAAA____>"+w);
+                console.log(typeof w);
+
+                return res.data.qty;
+            }else if (res.status==404){
+                console.log(res.message);
+                return -1;
+            }else {
+                console.log(res.data);
+                return -1;
+            }
+        }
+
+    });
+}*/
+
+function removeItem(orderId, id, qty,total) {
+    /*update itemDB*/
+
+    getPreItemQTY(id);
+
+    function getPreItemQTY(id) {
+        $.ajax({
+            url:"http://localhost:8080/SPA_BackEnd/item?option=SEARCH&searchId="+id,
+            method:"GET",
+            success:function (res){
+                if (res.status==200){
+                    var w=parseInt(res.data.qty)
+
+                    var updateObject={
+                        itemId:id,
+                        updateQty:w+qty,
+                    }
+                    $.ajax({
+                        url:"http://localhost:8080/SPA_BackEnd/item?option=updateQTY",
+                        method:"PUT",
+                        contentType: "application/json",
+                        data: JSON.stringify(updateObject),
+                        success:function (resp){
+                            if (resp.status==200){
+                                console.log(resp.message);
+                            }else  if (resp.status==400){
+                                console.log(resp.message);
+                            }else {
+                                console.log(resp.data);
+                                console.log(resp.message);
+                            }
+                        }
+                    });
+
+                }else if (res.status==404){
+                    console.log(res.message);
+
+                }else {
+                    console.log(res.data);
+
+                }
+            }
 
         });
     }
 
-});
 
-function removeItem(orderId, id, qty,total) {
-    /*update itemDB*/
-    for (let i = 0; i < itemDB.length; i++) {
+    /*console.log("X-->"+x);
+    console.log(typeof x);*/
+   /* if (x != -1){
+
+        var updateObject={
+            itemId:id,
+            updateQty:x+qty,
+        }
+        $.ajax({
+            url:"http://localhost:8080/SPA_BackEnd/item?option=updateQTY",
+            method:"PUT",
+            contentType: "application/json",
+            data: JSON.stringify(updateObject),
+            success:function (res){
+                if (res.status==200){
+                    console.log(res.message);
+                }else  if (res.status==400){
+                    console.log(res.message);
+                }else {
+                    console.log(res.data);
+                    console.log(res.message);
+                }
+            }
+        });
+    }else {
+        console.log("item code not found or Exception error");
+    }*/
+
+
+
+    /*for (let i = 0; i < itemDB.length; i++) {
         if (id == itemDB[i].getItemId()) {
             let preQty = itemDB[i].getItemQty();
             preQty += qty;
             itemDB[i].setItemQty(preQty);
         }
-    }
+    }*/
 
     /*update orderDB*/
     for (let j = 0; j < orderDB.length; j++) {
@@ -269,6 +365,7 @@ function saveOrder() {
         checked = idExits();
     }
 
+
     if (checked) {
         clearOrderItem();
     } else {
@@ -319,14 +416,14 @@ function updateItemDatabase() {
         }
     });
 
-    var qty = parseInt($("#orderQty").val());
+   /* var qty = parseInt($("#orderQty").val());
     for (let i = 0; i < itemDB.length; i++) {
         if (itemId == itemDB[i].getItemId()) {
             var x = parseInt(itemDB[i].getItemQty());
             x -= qty;
             itemDB[i].setItemQty(x);
         }
-    }
+    }*/
 }
 
 /*========================= validation =====================================*/
