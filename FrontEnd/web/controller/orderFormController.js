@@ -25,12 +25,12 @@ function loadOrderId() {
     } else {
         var value = parseInt($("#orderId").val().split("-")[1]);
         value++;
-        if (value <=9){
-            value="0-00"+value;
-        }else if (value <= 99){
-            value="0-0"+value;
-        }else {
-            value="0-"+value;
+        if (value <= 9) {
+            value = "0-00" + value;
+        } else if (value <= 99) {
+            value = "0-0" + value;
+        } else {
+            value = "0-" + value;
         }
 
         $("#orderId").val(value);
@@ -41,6 +41,48 @@ $("#btnPurchase").click(function () {
     if ($("#date").val() == "") {
         $("#date").css('border', '2px solid red');
     } else {
+        var time = new Date();
+        /*  var cstId = ;*/
+
+        var orderDetails = [];
+
+        for (let i = 0; i < orderDB.length; i++) {
+            var oDb = {
+                orderId: orderDB[i].getOrderId(),
+                itemCode: orderDB[i].getOrderItemId(),
+                qty: orderDB[i].getOrderQty(),
+                price: orderDB[i].getOrderItemPrice()
+            }
+            orderDetails.push(oDb);
+        }
+
+        var orderDatafiles = {
+            oId: $("#orderId").val(),
+            date: $("#date").val(),
+            subTotal: parseInt($('#total').text().split(" ")[0]),
+            currentTime: time.toLocaleString('en-US', {hour: 'numeric', minute: 'numeric', hour12: true}),
+            cstId: $("#orderFormCstId option:selected").text(),
+            saveOrderDeatiales: orderDetails
+        }
+
+        $.ajax({
+            url: "http://localhost:8080/SPA_BackEnd/order",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(orderDatafiles),
+            success: function (res) {
+                if (res.status == 200) {
+                    console.log(res.message);
+                } else if (res.status == 400) {
+                    console.log(res.message);
+                } else {
+                    console.log(res.data);
+                }
+            }, error: function (ob, textStatus, error) {
+                console.log("Error : "+textStatus);
+            }
+        });
+
         loadOrderId();
         $("#orderFormCustomerName,#orderFormCustomerAddress,#orderFormCustomerTp,#date").val("");
         $("#orderFormTableBody").empty();
@@ -52,9 +94,9 @@ function loadItemId() {
     $("#orderFormItemId").empty();
 
     $.ajax({
-        url:"http://localhost:8080/SPA_BackEnd/item?option=GetCustomerID",
-        method:"GET",
-        success:function (res){
+        url: "http://localhost:8080/SPA_BackEnd/item?option=GetCustomerID",
+        method: "GET",
+        success: function (res) {
             if (res.status == 200) {
                 for (const itemIds of res.data) {
                     $("#orderFormItemId").append($("<option></option>").attr("value", itemIds).text(itemIds.id));
@@ -74,9 +116,9 @@ function loadCustomerId() {
     $("#orderFormCstId").empty();
     /*$("#orderFormCstId").append($("<option></option>").attr("value",e).text(--select Id--));*/
     $.ajax({
-        url:"http://localhost:8080/SPA_BackEnd/customer?option=GetCustomerID",
-        method:"GET",
-        success:function (res){
+        url: "http://localhost:8080/SPA_BackEnd/customer?option=GetCustomerID",
+        method: "GET",
+        success: function (res) {
             if (res.status == 200) {
                 for (const customerId of res.data) {
                     $("#orderFormCstId").append($("<option></option>").attr("value", customerId).text(customerId.id));
@@ -166,74 +208,52 @@ $("#btnAddItem").click(function () {
                 let id = $(this).closest('tr').children(":eq(0)").text();
                 let itemPrice = parseInt($(this).closest('tr').children(":eq(2)").text());
                 let qty = parseInt($(this).closest('tr').children(":eq(3)").text());
-                let total =parseInt($(this).closest('tr').children(":eq(4)").text());
-                removeItem(orderId, id, qty,total,itemPrice);
+                let total = parseInt($(this).closest('tr').children(":eq(4)").text());
+                removeItem(orderId, id, qty, total, itemPrice);
             }
         });
     }
 });
 
-/*function getPreItemQTY(id) {
-    $.ajax({
-        url:"http://localhost:8080/SPA_BackEnd/item?option=SEARCH&searchId="+id,
-        method:"GET",
-        success:function (res){
-            if (res.status==200){
-                var w=parseInt(res.data.qty)
-                console.log("AAAAAAAA____>"+w);
-                console.log(typeof w);
 
-                return res.data.qty;
-            }else if (res.status==404){
-                console.log(res.message);
-                return -1;
-            }else {
-                console.log(res.data);
-                return -1;
-            }
-        }
-
-    });
-}*/
-
-function removeItem(orderId, id, qty,total,itemPrice) {
+function removeItem(orderId, id, qty, total, itemPrice) {
     /*update itemDB*/
 
     getPreItemQTY(id);
 
     function getPreItemQTY(id) {
         $.ajax({
-            url:"http://localhost:8080/SPA_BackEnd/item?option=SEARCH&searchId="+id,
-            method:"GET",
-            success:function (res){
-                if (res.status==200){
-                    var w=parseInt(res.data.qty)
+            url: "http://localhost:8080/SPA_BackEnd/item?option=SEARCH&searchId=" + id,
+            method: "GET",
+            success: function (res) {
+                if (res.status == 200) {
+                    var w = parseInt(res.data.qty)
 
-                    var updateObject={
-                        itemId:id,
-                        updateQty:w+qty,
+                    var updateObject = {
+                        itemId: id,
+                        updateQty: w + qty,
                     }
                     $.ajax({
-                        url:"http://localhost:8080/SPA_BackEnd/item?option=updateQTY",
-                        method:"PUT",
+                        url: "http://localhost:8080/SPA_BackEnd/item?option=updateQTY",
+                        method: "PUT",
                         contentType: "application/json",
                         data: JSON.stringify(updateObject),
-                        success:function (resp){
-                            if (resp.status==200){
+                        success: function (resp) {
+                            if (resp.status == 200) {
                                 console.log(resp.message);
-                            }else  if (resp.status==400){
+                            } else if (resp.status == 400) {
                                 console.log(resp.message);
-                            }else {
+                            } else {
                                 console.log(resp.data);
                                 console.log(resp.message);
                             }
                         }
                     });
 
-                }else if (res.status==404){
+                } else if (res.status == 404) {
                     console.log(res.message);
 
-                }else {
+                } else {
                     console.log(res.data);
 
                 }
@@ -245,32 +265,31 @@ function removeItem(orderId, id, qty,total,itemPrice) {
 
     /*console.log("X-->"+x);
     console.log(typeof x);*/
-   /* if (x != -1){
+    /* if (x != -1){
 
-        var updateObject={
-            itemId:id,
-            updateQty:x+qty,
-        }
-        $.ajax({
-            url:"http://localhost:8080/SPA_BackEnd/item?option=updateQTY",
-            method:"PUT",
-            contentType: "application/json",
-            data: JSON.stringify(updateObject),
-            success:function (res){
-                if (res.status==200){
-                    console.log(res.message);
-                }else  if (res.status==400){
-                    console.log(res.message);
-                }else {
-                    console.log(res.data);
-                    console.log(res.message);
-                }
-            }
-        });
-    }else {
-        console.log("item code not found or Exception error");
-    }*/
-
+         var updateObject={
+             itemId:id,
+             updateQty:x+qty,
+         }
+         $.ajax({
+             url:"http://localhost:8080/SPA_BackEnd/item?option=updateQTY",
+             method:"PUT",
+             contentType: "application/json",
+             data: JSON.stringify(updateObject),
+             success:function (res){
+                 if (res.status==200){
+                     console.log(res.message);
+                 }else  if (res.status==400){
+                     console.log(res.message);
+                 }else {
+                     console.log(res.data);
+                     console.log(res.message);
+                 }
+             }
+         });
+     }else {
+         console.log("item code not found or Exception error");
+     }*/
 
 
     /*for (let i = 0; i < itemDB.length; i++) {
@@ -290,11 +309,11 @@ function removeItem(orderId, id, qty,total,itemPrice) {
 
     /*updateTotal*/
 
-    let currentTotal =parseInt($('#total').text().split(".")[0]);
+    let currentTotal = parseInt($('#total').text().split(".")[0]);
     console.log(currentTotal);
-    let newTotal=currentTotal-total;
+    let newTotal = currentTotal - total;
     console.log(newTotal);
-    $('#total').text(newTotal+'.00/=');
+    $('#total').text(newTotal + '.00/=');
     countTotal(total);
 
 }
@@ -302,12 +321,12 @@ function removeItem(orderId, id, qty,total,itemPrice) {
 function countTotal(tableTotal) {
 
     var total;
-    if (tableTotal==undefined){
+    if (tableTotal == undefined) {
         var displayTotal = parseInt($("#total").text());
         console.log(displayTotal);
         if (displayTotal == 0) {
-            var itemQty=parseInt($("#orderQty").val()); //qty
-            var itemPrice=parseInt($("#orderFormPrice").val()); //price
+            var itemQty = parseInt($("#orderQty").val()); //qty
+            var itemPrice = parseInt($("#orderFormPrice").val()); //price
             total = itemQty * itemPrice;
             console.log(total);
             $("#total").text(total + ".00 /=");
@@ -323,7 +342,7 @@ function countTotal(tableTotal) {
     if (displayTotal > 100 || displayTotal < 1000) {
         $("#txtDiscount").val("5%");
         var subTotal = displayTotal - ((displayTotal * 5) / 100);
-            $("#subTotal").text(subTotal + " /=");
+        $("#subTotal").text(subTotal + " /=");
     } else if (displayTotal > 1000) {
         $("#txtDiscount").val("10%");
         var subTotal = displayTotal - ((displayTotal * 10) / 100);
@@ -396,14 +415,14 @@ function clearOrderItem() {
 }
 
 function updateItemDatabase() {
-   /* var itemId = ;*/
-    var preItemQty=$("#orderFormQty").val();
-    var orderQry=$("#orderQty").val();
+    /* var itemId = ;*/
+    var preItemQty = $("#orderFormQty").val();
+    var orderQry = $("#orderQty").val();
     console.log(preItemQty);
 
-    var itemQtyUpdateObject={
-        itemId:$("#orderFormItemId option:selected").text(),
-        updateQty:preItemQty-orderQry,
+    var itemQtyUpdateObject = {
+        itemId: $("#orderFormItemId option:selected").text(),
+        updateQty: preItemQty - orderQry,
     }
 
     $.ajax({
@@ -412,25 +431,25 @@ function updateItemDatabase() {
         contentType: "application/json",
         data: JSON.stringify(itemQtyUpdateObject),
         success: function (res) {
-            if (res.status==200){
+            if (res.status == 200) {
                 console.log(res.message);
-            }else  if (res.status==400){
+            } else if (res.status == 400) {
                 console.log(res.message);
-            }else {
+            } else {
                 console.log(res.data);
                 console.log(res.message);
             }
         }
     });
 
-   /* var qty = parseInt($("#orderQty").val());
-    for (let i = 0; i < itemDB.length; i++) {
-        if (itemId == itemDB[i].getItemId()) {
-            var x = parseInt(itemDB[i].getItemQty());
-            x -= qty;
-            itemDB[i].setItemQty(x);
-        }
-    }*/
+    /* var qty = parseInt($("#orderQty").val());
+     for (let i = 0; i < itemDB.length; i++) {
+         if (itemId == itemDB[i].getItemId()) {
+             var x = parseInt(itemDB[i].getItemQty());
+             x -= qty;
+             itemDB[i].setItemQty(x);
+         }
+     }*/
 }
 
 /*========================= validation =====================================*/
