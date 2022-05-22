@@ -20,10 +20,44 @@
     }
 }*/
 function loadOrderId() {
-    if ($("#orderId").val() == "") {
+
+    $.ajax({
+        url:"http://localhost:8080/SPA_BackEnd/order?option=GetOrderId",
+        message:"GET",
+        success:function (res){
+            if (res.status==200){
+                console.log(res.message);
+                $("#orderId").val(res.data);
+            }else if (res.status==404){
+                $("#orderId").val(res.data);
+            }else {
+                console.log(res.data);
+            }
+        }
+    });
+
+
+
+
+
+
+    /*if ($("#orderId").val() == "") {
         $("#orderId").val("0-001");
     } else {
-        var value = parseInt($("#orderId").val().split("-")[1]);
+
+        $.ajax({
+            url:"http://localhost:8080/SPA_BackEnd/order?option=GetOrderId",
+            message:"GET",
+            success:function (res){
+                if (res.status==200){
+                    console.log(res.message);
+                    $("#orderId").val(res.data);
+                }else {
+                    console.log(res.data)
+                }
+            }
+        });
+       /!* var value = parseInt($("#orderId").val().split("-")[1]);
         value++;
         if (value <= 9) {
             value = "0-00" + value;
@@ -33,8 +67,8 @@ function loadOrderId() {
             value = "0-" + value;
         }
 
-        $("#orderId").val(value);
-    }
+        $("#orderId").val(value);*!/
+    }*/
 }
 
 $("#btnPurchase").click(function () {

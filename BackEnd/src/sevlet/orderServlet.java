@@ -30,17 +30,41 @@ public class orderServlet extends HttpServlet {
             String option = req.getParameter("option");
 
             switch (option){
-                case "LENGTH":
+                case "GetOrderId":
                     System.out.println("Start");
-                    ResultSet rstOrderCount = connection.prepareStatement("SELECT COUNT(orderId) FROM `order`").executeQuery();
+                    ResultSet rstOrderCount = connection.prepareStatement("SELECT `orderId` FROM `order` ORDER BY `orderId` DESC LIMIT 1").executeQuery();
+                    if (rstOrderCount.isFirst()) {
+                        System.out.println("********************");
+                    }
                     if (rstOrderCount.next()) {
+                        String lastId = rstOrderCount.getString(1);
+                        System.out.println("7777777777777777777777777777777777777");
+                        int value = Integer.parseInt(lastId.split("-")[1]);
+                        value++;
+                        String nextOrderId;
+                        if (value <= 9) {
+                            nextOrderId = "0-00" + value;
+                        } else if (value <= 99) {
+                            nextOrderId = "0-0" + value;
+                        } else {
+                            nextOrderId = "0-" + value;
+                        }
+
                         JsonObjectBuilder response = Json.createObjectBuilder();
-                        response.add("status",200);
-                        response.add("message","count order table length success");
-                        response.add("data",rstOrderCount.getInt(1));
+                        resp.setStatus(HttpServletResponse.SC_CREATED);
+                        response.add("status", 200);
+                        response.add("message", "Generate next orderId");
+                        response.add("data", nextOrderId);
+                        writer.print(response.build());
+
+                    } else {
+                        JsonObjectBuilder response = Json.createObjectBuilder();
+                        resp.setStatus(HttpServletResponse.SC_CREATED);
+                        response.add("status", 404);
+                        response.add("message", "Generate first orderId");
+                        response.add("data", "0-001");
                         writer.print(response.build());
                     }
-                    System.out.println("length : "+rstOrderCount.getInt(1));
                     System.out.println("End");
                     break;
             }
