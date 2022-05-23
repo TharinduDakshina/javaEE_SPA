@@ -32,38 +32,38 @@ public class orderServlet extends HttpServlet {
             switch (option){
                 case "GetOrderId":
                     System.out.println("Start");
-                    ResultSet rstOrderCount = connection.prepareStatement("SELECT `orderId` FROM `order` ORDER BY `orderId` DESC LIMIT 1").executeQuery();
-                    if (rstOrderCount.isFirst()) {
-                        System.out.println("********************");
-                    }
-                    if (rstOrderCount.next()) {
-                        String lastId = rstOrderCount.getString(1);
-                        System.out.println("7777777777777777777777777777777777777");
-                        int value = Integer.parseInt(lastId.split("-")[1]);
-                        value++;
-                        String nextOrderId;
-                        if (value <= 9) {
-                            nextOrderId = "0-00" + value;
-                        } else if (value <= 99) {
-                            nextOrderId = "0-0" + value;
-                        } else {
-                            nextOrderId = "0-" + value;
+                    ResultSet rst = connection.prepareStatement("Select count(*) from `order`").executeQuery();
+                    if (rst.next()){
+                        if (rst.getInt(1)==0) {
+                            JsonObjectBuilder response = Json.createObjectBuilder();
+                            resp.setStatus(HttpServletResponse.SC_CREATED);
+                            response.add("status", 404);
+                            response.add("message", "Generate first orderId");
+                            response.add("data", "0-001");
+                            writer.print(response.build());
+                        }else {
+                            ResultSet rstOrderCount = connection.prepareStatement("SELECT `orderId` FROM `order` ORDER BY `orderId` DESC LIMIT 1").executeQuery();
+                            if (rstOrderCount.next()) {
+                                String lastId = rstOrderCount.getString(1);
+                                int value = Integer.parseInt(lastId.split("-")[1]);
+                                value++;
+                                String nextOrderId;
+                                if (value <= 9) {
+                                    nextOrderId = "0-00" + value;
+                                } else if (value <= 99) {
+                                    nextOrderId = "0-0" + value;
+                                } else {
+                                    nextOrderId = "0-" + value;
+                                }
+
+                                JsonObjectBuilder response = Json.createObjectBuilder();
+                                resp.setStatus(HttpServletResponse.SC_CREATED);
+                                response.add("status", 200);
+                                response.add("message", "Generate next orderId");
+                                response.add("data", nextOrderId);
+                                writer.print(response.build());
+                            }
                         }
-
-                        JsonObjectBuilder response = Json.createObjectBuilder();
-                        resp.setStatus(HttpServletResponse.SC_CREATED);
-                        response.add("status", 200);
-                        response.add("message", "Generate next orderId");
-                        response.add("data", nextOrderId);
-                        writer.print(response.build());
-
-                    } else {
-                        JsonObjectBuilder response = Json.createObjectBuilder();
-                        resp.setStatus(HttpServletResponse.SC_CREATED);
-                        response.add("status", 404);
-                        response.add("message", "Generate first orderId");
-                        response.add("data", "0-001");
-                        writer.print(response.build());
                     }
                     System.out.println("End");
                     break;
