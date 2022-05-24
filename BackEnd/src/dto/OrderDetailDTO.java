@@ -1,13 +1,13 @@
 package dto;
 
-public class orderDetailDTO {
+public class OrderDetailDTO {
     private String oId;
     private String cstId;
     private String iId;
     private int qty;
     private double price;
 
-    public orderDetailDTO(String oId, String cstId, String iId, int qty, double price) {
+    public OrderDetailDTO(String oId, String cstId, String iId, int qty, double price) {
         this.setoId(oId);
         this.setCstId(cstId);
         this.setiId(iId);
@@ -15,7 +15,7 @@ public class orderDetailDTO {
         this.setPrice(price);
     }
 
-    public orderDetailDTO() {
+    public OrderDetailDTO() {
     }
 
 
