@@ -7,7 +7,7 @@
                 url="jdbc:mysql://localhost:3306/thogakade"
                 username="root"
                 password="1234"
-                maxTotal="5"
-                initialSize="5"
+                maxTotal="15"
+                initialSize="15"
         ></Resource>
 </Context>

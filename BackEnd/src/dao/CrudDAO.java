@@ -18,5 +18,6 @@ public interface CrudDAO<T,ID> extends SuperDAO {
 
     JsonArray getAll(Connection connection) throws SQLException, ClassNotFoundException;
 
+
 }
 

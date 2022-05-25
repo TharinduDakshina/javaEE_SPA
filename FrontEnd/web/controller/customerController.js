@@ -107,13 +107,7 @@ $("#btnSearch").click(function () {
 
 });
 
-function searchCustomer(id) {
-    for (let i = 0; i < customerDB.length; i++) {
-        if (customerDB[i].getCustomerId() == id) {
-            return customerDB[i];
-        }
-    }
-}
+
 
 $("#deleteCustomer").click(function () {
     var deleteId = $("#cstId").val();

@@ -48,7 +48,7 @@ public class orderServlet extends HttpServlet {
                             JsonObjectBuilder response = Json.createObjectBuilder();
                             resp.setStatus(HttpServletResponse.SC_CREATED);
                             response.add("status", 404);
-                            response.add("message", "Generate first orderId");
+                            response.add("message", orderCount);
                             response.add("data", "0-001");
                             writer.print(response.build());
                         }else {
@@ -71,7 +71,7 @@ public class orderServlet extends HttpServlet {
                                 JsonObjectBuilder response = Json.createObjectBuilder();
                                 resp.setStatus(HttpServletResponse.SC_CREATED);
                                 response.add("status", 200);
-                                response.add("message", "Generate next orderId");
+                                response.add("message", orderCount);
                                 response.add("data", nextOrderId);
                                 System.out.println("nextOrderId : "+nextOrderId);
                                 writer.print(response.build());
@@ -81,6 +81,7 @@ public class orderServlet extends HttpServlet {
                     System.out.println("End");
                     break;
             }
+            connection.close();
         } catch (SQLException throwables) {
             JsonObjectBuilder response = Json.createObjectBuilder();
             resp.setStatus(HttpServletResponse.SC_OK);

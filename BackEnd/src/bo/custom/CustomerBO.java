@@ -11,6 +11,7 @@ public interface CustomerBO extends SuperBO {
     JsonArray getAllCustomers(Connection connection) throws SQLException, ClassNotFoundException;
     JsonArray getAllCustomersId(Connection connection) throws SQLException, ClassNotFoundException;
 
+
     CustomerDTO searchCustomer(Connection connection , String id) throws SQLException, ClassNotFoundException;
 
 

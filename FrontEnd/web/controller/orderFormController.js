@@ -70,6 +70,7 @@ $("#btnPurchase").click(function () {
         $.ajax({
             url: "http://localhost:8080/SPA_BackEnd/order",
             method: "POST",
+            async:false,
             contentType: "application/json",
             data: JSON.stringify(orderDatafiles),
             success: function (res) {
