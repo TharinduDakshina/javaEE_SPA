@@ -27,6 +27,7 @@ function loadOrderId() {
         success:function (res){
             if (res.status==200){
                 console.log(res.message);
+                console.log(res.data)
                 $("#orderId").val(res.data);
             }else if (res.status==404){
                 $("#orderId").val(res.data);
@@ -80,13 +81,17 @@ $("#btnPurchase").click(function () {
                     console.log(res.data);
                 }
             }, error: function (ob, textStatus, error) {
-                console.log("Error : "+textStatus);
+                console.log("Error 1: "+textStatus);
+                console.log("Error 2: "+ob);
+                console.log("Error 3: "+error);
             }
         });
 
-        loadOrderId();
-        $("#orderFormCustomerName,#orderFormCustomerAddress,#orderFormCustomerTp,#date").val("");
+
+        $("#orderFormCustomerName,#orderFormCustomerAddress,#orderFormCustomerTp,#date,#txtCash,#txtDiscount,#txtBalance").val("");
+        $("#subTotal,#total").text("0.00/=");
         $("#orderFormTableBody").empty();
+        loadOrderId();
     }
 
 });

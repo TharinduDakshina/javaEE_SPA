@@ -1,6 +1,12 @@
 package sevlet;
 
-import entity.orderDetail;
+import bo.BOFactory;
+import bo.custom.CustomerBO;
+import bo.custom.OrderBO;
+import bo.custom.OrderDetailsBO;
+import dto.OrderDTO;
+import dto.OrderDetailDTO;
+import entity.OrderDetail;
 
 import javax.annotation.Resource;
 import javax.json.*;
@@ -20,6 +26,9 @@ public class orderServlet extends HttpServlet {
     @Resource(name = "java:comp/env/thogakade/pool")
     DataSource ds;
 
+    OrderBO orderBO = (OrderBO) BOFactory.getBoFactory().getBO(BOFactory.BOTypes.ORDER);
+    OrderDetailsBO orderDetailsBO = (OrderDetailsBO) BOFactory.getBoFactory().getBO(BOFactory.BOTypes.ORDERDETAIL);
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         PrintWriter writer = resp.getWriter();
@@ -32,9 +41,10 @@ public class orderServlet extends HttpServlet {
             switch (option){
                 case "GetOrderId":
                     System.out.println("Start");
-                    ResultSet rst = connection.prepareStatement("Select count(*) from `order`").executeQuery();
-                    if (rst.next()){
-                        if (rst.getInt(1)==0) {
+                    /*ResultSet rst = connection.prepareStatement("Select count(*) from `order`").executeQuery();*/
+
+                    int orderCount = orderBO.getOrderCount(connection);
+                        if (orderCount==0) {
                             JsonObjectBuilder response = Json.createObjectBuilder();
                             resp.setStatus(HttpServletResponse.SC_CREATED);
                             response.add("status", 404);
@@ -42,11 +52,13 @@ public class orderServlet extends HttpServlet {
                             response.add("data", "0-001");
                             writer.print(response.build());
                         }else {
-                            ResultSet rstOrderCount = connection.prepareStatement("SELECT `orderId` FROM `order` ORDER BY `orderId` DESC LIMIT 1").executeQuery();
-                            if (rstOrderCount.next()) {
-                                String lastId = rstOrderCount.getString(1);
-                                int value = Integer.parseInt(lastId.split("-")[1]);
-                                value++;
+
+                           /* ResultSet rstOrderCount = connection.prepareStatement("SELECT `orderId` FROM `order` ORDER BY `orderId` DESC LIMIT 1").executeQuery();
+                                String lastId = rstOrderCount.getString(1);*/
+
+                            String lastOrder = orderBO.getLastOrder(connection);
+                            int value = Integer.parseInt(lastOrder.split("-")[1]);
+                                value=value+1;
                                 String nextOrderId;
                                 if (value <= 9) {
                                     nextOrderId = "0-00" + value;
@@ -61,18 +73,27 @@ public class orderServlet extends HttpServlet {
                                 response.add("status", 200);
                                 response.add("message", "Generate next orderId");
                                 response.add("data", nextOrderId);
+                                System.out.println("nextOrderId : "+nextOrderId);
                                 writer.print(response.build());
-                            }
+
                         }
-                    }
+
                     System.out.println("End");
                     break;
             }
-        } catch (SQLException e) {
+        } catch (SQLException throwables) {
             JsonObjectBuilder response = Json.createObjectBuilder();
             resp.setStatus(HttpServletResponse.SC_OK);
             response.add("status",500);
             response.add("message","Exception Error");
+            response.add("status",throwables.getLocalizedMessage());
+            writer.print(response.build());
+            throwables.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            JsonObjectBuilder response = Json.createObjectBuilder();
+            resp.setStatus(HttpServletResponse.SC_OK);
+            response.add("status",500);
+            response.add("message","Class not found");
             response.add("status",e.getLocalizedMessage());
             writer.print(response.build());
             e.printStackTrace();
@@ -99,31 +120,36 @@ public class orderServlet extends HttpServlet {
         try {
             Connection connection = ds.getConnection();
             connection.setAutoCommit(false);
-            PreparedStatement pst = connection.prepareStatement("INSERT INTO `order` values(?,?,?,?,?)");
+            OrderDTO orderDTO = new OrderDTO(oId, date, cstId, currentTime, subTotal);
+            boolean result = orderBO.placeOrder(connection, orderDTO);
+            /*PreparedStatement pst = connection.prepareStatement("INSERT INTO `order` values(?,?,?,?,?)");
             pst.setString(1,oId);
             pst.setString(2,cstId);
             pst.setDate(3,date);
             pst.setString(4,currentTime);
-            pst.setDouble(5,subTotal);
+            pst.setDouble(5,subTotal);*/
 
-            if (pst.executeUpdate()>0) {
+            if (result) {
                 System.out.println("order eketa data damma");
                 for (JsonValue dataArray:saveOrderDeatiales
                 ) {
-                    orderDetail orderDetail = new orderDetail(dataArray.asJsonObject().getString("orderId"),cstId,dataArray.asJsonObject().getString("itemCode"),dataArray.asJsonObject().getInt("qty"),dataArray.asJsonObject().getInt("price"));
+                    OrderDetailDTO orderDetailDTO = new OrderDetailDTO(dataArray.asJsonObject().getString("orderId"), dataArray.asJsonObject().getString("itemCode"), dataArray.asJsonObject().getInt("qty"), dataArray.asJsonObject().getInt("price"));
+                    boolean result2 = orderDetailsBO.placeOrder(connection, orderDetailDTO);
+                    /*OrderDetail orderDetail = new OrderDetail(dataArray.asJsonObject().getString("orderId"),cstId,dataArray.asJsonObject().getString("itemCode"),dataArray.asJsonObject().getInt("qty"),dataArray.asJsonObject().getInt("price"));
                     PreparedStatement stm = connection.prepareStatement("INSERT INTO `order detail` values (?,?,?,?)");
-                    stm.setString(1,orderDetail.getiId());
-                    stm.setString(2,orderDetail.getoId());
+                    stm.setString(1,orderDetail.getItemCode());
+                    stm.setString(2,orderDetail.getOrderId());
                     stm.setInt(3,orderDetail.getQty());
-                    stm.setDouble(4,orderDetail.getPrice());
-                    if (stm.executeUpdate()>0) {
-                        System.out.println("Badu Wada ");
-                        connection.commit();
+                    stm.setDouble(4,orderDetail.getPrice());*/
+                    if (result2) {
+
                         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
                         objectBuilder.add("status",200);
                         objectBuilder.add("message","OrderDetail and order data add Successfully");
                         objectBuilder.add("data","");
                         writer.print(objectBuilder.build());
+                        connection.commit();
+                        System.out.println("Badu Wada ");
                     }else {
                         connection.rollback();
                         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
@@ -144,11 +170,19 @@ public class orderServlet extends HttpServlet {
                 writer.print(objectBuilder.build());
             }
             connection.setAutoCommit(true);
-        } catch (SQLException e) {
+        } catch (SQLException throwables) {
             JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
             resp.setStatus(HttpServletResponse.SC_OK);
             objectBuilder.add("status",500);
             objectBuilder.add("message","Exception Error");
+            objectBuilder.add("data",throwables.getLocalizedMessage());
+            writer.print(objectBuilder.build());
+            throwables.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+            resp.setStatus(HttpServletResponse.SC_OK);
+            objectBuilder.add("status",500);
+            objectBuilder.add("message","Class not Found");
             objectBuilder.add("data",e.getLocalizedMessage());
             writer.print(objectBuilder.build());
             e.printStackTrace();

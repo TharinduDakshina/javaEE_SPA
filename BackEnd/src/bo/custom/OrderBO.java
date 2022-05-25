@@ -20,4 +20,8 @@ public interface OrderBO extends SuperBO {
     JsonArray searchOrderDetails(Connection connection,String id) throws SQLException, ClassNotFoundException;
 
     boolean placeOrder(Connection connection,OrderDTO orderDTO) throws SQLException, ClassNotFoundException;
+
+    int getOrderCount(Connection connection) throws SQLException, ClassNotFoundException;
+
+    String getLastOrder(Connection connection) throws SQLException, ClassNotFoundException;
 }

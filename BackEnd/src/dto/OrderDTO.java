@@ -11,13 +11,14 @@ public class OrderDTO {
     private double cstSalary;
     private String iId;
     private String iName;
+    private String time;
     private int iQty;
     private double iPrice;
     private int orderQty;
     private double total;
     private double subTotal;
 
-    public OrderDTO(String orderId, Date date, String cstId, String cstName, String cstAddress, double cstSalary, String iId, String iName, int iQty, double iPrice, int orderQty, double total, double subTotal) {
+    public OrderDTO(String orderId, Date date, String cstId, String cstName, String cstAddress, double cstSalary, String iId, String iName, String time, int iQty, double iPrice, int orderQty, double total, double subTotal) {
         this.setOrderId(orderId);
         this.setDate(date);
         this.setCstId(cstId);
@@ -26,6 +27,7 @@ public class OrderDTO {
         this.setCstSalary(cstSalary);
         this.setiId(iId);
         this.setiName(iName);
+        this.setTime(time);
         this.setiQty(iQty);
         this.setiPrice(iPrice);
         this.setOrderQty(orderQty);
@@ -36,6 +38,13 @@ public class OrderDTO {
     public OrderDTO() {
     }
 
+    public OrderDTO(String orderId, Date date, String cstId, String time, double subTotal) {
+        this.orderId = orderId;
+        this.date = date;
+        this.cstId = cstId;
+        this.time = time;
+        this.subTotal = subTotal;
+    }
 
     public String getOrderId() {
         return orderId;
@@ -101,6 +110,14 @@ public class OrderDTO {
         this.iName = iName;
     }
 
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
     public int getiQty() {
         return iQty;
     }
@@ -143,7 +160,7 @@ public class OrderDTO {
 
     @Override
     public String toString() {
-        return "orderDTO{" +
+        return "OrderDTO{" +
                 "orderId='" + orderId + '\'' +
                 ", date=" + date +
                 ", cstId='" + cstId + '\'' +
@@ -152,6 +169,7 @@ public class OrderDTO {
                 ", cstSalary=" + cstSalary +
                 ", iId='" + iId + '\'' +
                 ", iName='" + iName + '\'' +
+                ", time='" + time + '\'' +
                 ", iQty=" + iQty +
                 ", iPrice=" + iPrice +
                 ", orderQty=" + orderQty +

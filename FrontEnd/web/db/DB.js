@@ -1,1 +1,1 @@
-var customerDB = new Array();
+var orderDB = new Array();
